@@ -1,12 +1,14 @@
 require 'codeclimate-test-reporter'
 require 'simplecov'
+require 'pullreview/coverage'
 require 'vcr'
 require_relative './matchers'
 require_relative './helpers'
 
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
   SimpleCov::Formatter::HTMLFormatter,
-  CodeClimate::TestReporter::Formatter
+  CodeClimate::TestReporter::Formatter,
+  PullReview::Coverage::Formatter
 ]
 
 environment_variables_defined =
