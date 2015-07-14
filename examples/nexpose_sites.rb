@@ -1,27 +1,25 @@
 #!/usr/bin/env ruby
-require 'rubygems'
+
+#Pulled in lines 9-17 from [misterpaul] https://github.com/misterpaul/NexposeRubyScripts/blob/master/ScanPlanReporter/ScanPlanReporter.rb
 require 'nexpose'
+require 'time'
+require 'highline/import'
+include Nexpose
 
-require 'pp'
+# Defaults: Change to suit your environment.
+default_host = 'your-host'
+default_port = 3780
+default_name = 'your-nexpose-id'
 
-#
-# Change these to point to your instance/user/password
-#
-host = "127.0.0.1"
-port = "3780"
-user = "user"
-pass = "pass"
+host = ask('Enter the server name (host) for Nexpose: ') { |q| q.default = default_host }
+port = ask('Enter the port for Nexpose: ') { |q| q.default = default_port.to_s }
+user = ask('Enter your username: ') { |q| q.default = default_name }
+pass = ask('Enter your password: ') { |q| q.echo = '*' }
 
-#
-# Connect and authenticate
-#
 begin
+nsc = Connection.new(host, user, pass, port)
+nsc.login
 
-	# Create a connection to the NeXpose instance
-	@nsc = Nexpose::Connection.new(host, user, pass, port)
-
-	# Authenticate to this instance (throws an exception if this fails)
-	@nsc.login
 	
 rescue ::Nexpose::APIError => e
 	$stderr.puts ("Connection failed: #{e.reason}")
@@ -31,12 +29,16 @@ end
 #
 # Query a list of all NeXpose sites and display them
 #
-sites = @nsc.site_listing || []
+sites = nsc.list_sites || []
 case sites.length
 when 0
 	puts("There are currently no active sites on this NeXpose instance")
-end
+else
 
 sites.each do |site|
-	puts("    Site ##{site[:site_id]} '#{site[:name]}' Risk Factor: #{site[:risk_factor]} Risk Score: #{site[:risk_score]}")
+        puts ("Site ID: #{site.id},Site Name: #{site.name},Risk Score: #{site.risk_score}")
 end
+end
+
+nsc.logout
+
